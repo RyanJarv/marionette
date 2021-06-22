@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "app_name": "user-data-swap",
+  "stages": {
+    "dev": {
+      "autogen_policy": false,
+      "iam_policy_file": "my-policy.json",
+      "lambda_timeout": 900
+    }
+  }
+}

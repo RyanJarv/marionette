@@ -1,0 +1,16 @@
+{
+  "version": "0",
+  "id": "174c3f4b-454b-105d-3f26-fb85f7318cd8",
+  "detail-type": "AWS API Call via CloudTrail",
+  "source": "aws.ec2",
+  "account": "253528964770",
+  "time": "2021-06-16T02:13:55Z",
+  "region": "us-west-2",
+  "resources": [],
+  "detail": {
+    "instance-id": "i-01221288b498bc134",
+    "state": "stopped"
+  }
+}
+
+

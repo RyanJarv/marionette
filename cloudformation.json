@@ -1,0 +1,26 @@
+{
+  "Resources" : {
+    "DynamoDBTable" : {
+      "Type" : "AWS::DynamoDB::Table",
+      "Properties" : {
+        "TableName" : "UserDataSwap",
+        "AttributeDefinitions" : [
+          {
+            "AttributeName" : "instance_id",
+            "AttributeType" : "S"
+          }
+        ],
+        "KeySchema" : [
+          {
+            "AttributeName" : "instance_id",
+            "KeyType" : "HASH"
+          }
+        ],
+        "ProvisionedThroughput" : {
+          "ReadCapacityUnits" : "5",
+          "WriteCapacityUnits" : "5"
+        }
+      }
+    }
+  }
+}
