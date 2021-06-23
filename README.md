@@ -32,7 +32,7 @@ The config is located at `chalicelib/config.yaml` and should be edited before de
     * To work around terraform SSH provisioning complaining about an incorrect instance state this can be set to 9. 
       However, this is only useful if an Elastic IP or IPv6 address is used to connect to the instance, otherwise the
       IP will change on restart and SSH provisioning will fail.
-    * To work around terraform SSH provisioning when an ElasticIP address is used you can set this to a higher number
+    * To work around terraform SSH provisioning when an ElasticIP address is not used you can set this to a higher number
       to have it wait till provisioning is complete before restarting. Essentially this needs to be a best guess since
       we don't have any indication when this may be done.
 * user_data
