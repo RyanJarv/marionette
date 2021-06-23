@@ -63,9 +63,10 @@ the future, for now you can try the following to do this manually.
 
 __WARNING__: This will allow any AWS account to run any action against the bus set up in the Marionett account,
 probably best to set this part up in a account that isn't used for anything else. The permissive resource policy is one
-of the ways to get override the lack of permissions assigned to the the put-event rule to avoid needing `iam:PassRole`
-and an appropriate role already configured in the victim account. It may be possible to reduce these permissions, need
-to do more testing here though.
+of the ways to get override the lack of permissions assigned to the the put-event rule in the victim account. Doing it
+this way avoids the need for `iam:PassRole` permissions in the victim account to create the event bus rules that forward
+the events to the Marionette account. It may be possible to reduce these permissions, I need to do more testing here
+though.
 
 * In the Marionett account:
   * In the Marionett lambda account create a new event bus named `run-instance-trigger` and give it the following
@@ -82,7 +83,7 @@ to do more testing here though.
       }]
     }
     ```
-  * Set up the following rule to trigger the Marionett function with the following event config.
+  * Set up the following rule to trigger the Marionett function with the event config below.
      ```
       {
         "source": ["aws.ec2"],
