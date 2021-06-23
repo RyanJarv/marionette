@@ -7,6 +7,8 @@ perspective when in passive mode there will be no obvious changes to the instanc
 taking longer to start up (although may cause issues with certain provisioning tools). This is a well known attack,
 only change to what I've seen elsewhere is adding Event Bridge and Lambda.
 
+In general this is an improved version of [UserDataSwap](https://github.com/RyanJarv/UserDataSwap).
+
 ## Active vs Passive
 
 Marionett can run in either active or passive mode, passive is generally safer and less likely to interfere with
