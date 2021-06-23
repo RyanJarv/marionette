@@ -18,7 +18,7 @@ the RunInstances API, by default this is immediately however can be configured t
 to work around issues that you may run into with various provisioning tools.
 
 ## Config
-The config is located at chalicelib/config.yaml and should be edited before deploy.
+The config is located at `chalicelib/config.yaml` and should be edited before deploy.
 ### Options
 * dynamodb_table
   * Name of the DynamoDB table to create to track instance state.
