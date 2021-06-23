@@ -14,7 +14,10 @@
             "Effect": "Allow",
             "Action": [
                 "ec2:ModifyInstanceAttribute",
-                "ec2:DescribeInstanceAttribute"
+                "ec2:DescribeInstanceAttribute",
+                "ec2:DescribeInstances",
+                "ec2:StopInstances",
+                "ec2:StartInstances"
             ],
             "Resource": "*"
         },
@@ -23,7 +26,8 @@
             "Action": [
                 "sqs:ReceiveMessage",
                 "sqs:SendMessage",
-                "sqs:DeleteMessage"
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes"
             ],
             "Resource": "arn:aws:sqs:*:*:user-data-swap-restart-delay"
         },

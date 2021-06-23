@@ -1,0 +1,11 @@
+---
+dynamodb_table: UserDataSwap
+sqs_queue: user-data-swap-restart-delay
+restart_on_run: False
+on_run_delay: 9
+user_data: |-
+  #cloud-config
+
+  bootcmd:
+    - echo HELLO FROM USER DATA SCRIPT | tee /msg > /dev/kmsg
+    - poweroff

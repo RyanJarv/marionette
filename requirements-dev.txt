@@ -1,1 +1,1 @@
-boto3-stubs[ec2,dynamodb]
+boto3-stubs[ec2,dynamodb,sts]

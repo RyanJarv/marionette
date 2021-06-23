@@ -3,6 +3,7 @@
   "app_name": "user-data-swap",
   "stages": {
     "dev": {
+      "automatic_layer": true,
       "autogen_policy": false,
       "iam_policy_file": "iam-policy.json",
       "lambda_timeout": 10
