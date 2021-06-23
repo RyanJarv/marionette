@@ -139,8 +139,8 @@ For another similar attack (Update: AWS now prevents this in most accounts) with
 
 ## Requirements
 
-* AWS CLI already configured with Administrator permission (see the Cross Account setup section for more info on
-  how this can be reduced).
+* AWS CLI already configured with Administrator permission for the deployment account (which isn't necessarily the
+  targeted account, see the Cross Account section for more info).
 * Recent version of [Python](https://www.python.org/)
 * [Chalice](https://github.com/aws/chalice)
 * [AWS CLI](https://pypi.org/project/awscli/)
