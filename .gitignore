@@ -1,0 +1,7 @@
+__pycache__
+.chalice/s3bucket
+.chalice/deployments
+.chalice/packaged
+.chalice/deployed
+.terraform
+terraform.tfstate*

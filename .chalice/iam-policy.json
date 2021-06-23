@@ -12,8 +12,20 @@
         },
         {
             "Effect": "Allow",
-            "Action": ["ec2:*"],
+            "Action": [
+                "ec2:ModifyInstanceAttribute",
+                "ec2:DescribeInstanceAttribute"
+            ],
             "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:SendMessage",
+                "sqs:DeleteMessage"
+            ],
+            "Resource": "arn:aws:sqs:*:*:user-data-swap-restart-delay"
         },
         {
             "Effect": "Allow",
@@ -21,7 +33,7 @@
                 "dynamodb:GetItem",
                 "dynamodb:UpdateItem"
             ],
-            "Resource": "arn:aws:dynamodb:us-west-2:253528964770:table/UserDataSwap"
+            "Resource": "arn:aws:dynamodb:*:*:table/UserDataSwap"
         }
     ]
 }

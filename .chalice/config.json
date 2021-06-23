@@ -4,8 +4,8 @@
   "stages": {
     "dev": {
       "autogen_policy": false,
-      "iam_policy_file": "my-policy.json",
-      "lambda_timeout": 900
+      "iam_policy_file": "iam-policy.json",
+      "lambda_timeout": 10
     }
   }
 }

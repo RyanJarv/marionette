@@ -17,9 +17,15 @@
           }
         ],
         "ProvisionedThroughput" : {
-          "ReadCapacityUnits" : "5",
-          "WriteCapacityUnits" : "5"
+          "ReadCapacityUnits" : 5,
+          "WriteCapacityUnits" : 5
         }
+      }
+    },
+    "SqsQueue" : {
+      "Type" : "AWS::SQS::Queue",
+      "Properties" : {
+        "QueueName": "user-data-swap-restart-delay"
       }
     }
   }
