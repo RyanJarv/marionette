@@ -1,8 +1,8 @@
 ---
 dynamodb_table: UserDataSwap
 sqs_queue: user-data-swap-restart-delay
-restart_on_run: False
-on_run_delay: 9
+active_mode: False
+restart_delay: 0
 user_data: |-
   #cloud-config
 

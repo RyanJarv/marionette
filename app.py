@@ -119,7 +119,7 @@ def on_run(event: 'chalice.app.CloudWatchEvent'):
     """
 
     status: str
-    if not conf["restart_on_run"]:
+    if not conf["active_mode"]:
         status = 'skipped'
     else:
         app.log.debug(f"event: {event.detail}")
@@ -127,7 +127,7 @@ def on_run(event: 'chalice.app.CloudWatchEvent'):
         url = f"https://sqs.{sess.region_name}.amazonaws.com/{account_id}/{conf['sqs_queue']}"
         app.log.debug(f"Queue URL is {url}")
         queue = sqs.Queue(url)
-        queue.send_message(MessageBody=json.dumps(event.detail), DelaySeconds=conf['on_run_delay'])
+        queue.send_message(MessageBody=json.dumps(event.detail), DelaySeconds=conf['restart_delay'])
         status = 'done'
 
     return {'status': status}
