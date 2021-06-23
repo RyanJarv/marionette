@@ -82,22 +82,26 @@ to do more testing here though.
       }]
     }
     ```
-  * Set up a rule to trigger the Marionett function with the following event config.
-    ```
-    {
-      "source": [
-        "aws.ec2"
-      ],
-      "detail": {
-        "eventSource": [
-          "ec2.amazonaws.com"
-        ],
-        "eventName": [
-          "RunInstances"
-        ]
+  * Set up the following rule to trigger the Marionett function with the following event config.
+     ```
+      {
+        "source": ["aws.ec2"],
+        "detail-type": ["EC2 Instance State-change Notification"],
+        "detail": {
+          "state": ["stopped"]
+        }
       }
-    }
-    ```
+     ```
+  * If active mode is used add a second rule with the following.
+     ```
+     {
+       "source": ["aws.ec2"],
+       "detail": {
+         "eventSource": ["ec2.amazonaws.com"],
+         "eventName": ["RunInstances"]
+       }
+     }
+     ```
 * In the victim account:
   * Create the run-instances event trigger:
     ```
