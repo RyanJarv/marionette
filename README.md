@@ -139,7 +139,8 @@ For another similar attack (Update: AWS now prevents this in most accounts) with
 
 ## Requirements
 
-* AWS CLI already configured with Administrator permission
+* AWS CLI already configured with Administrator permission (see the Cross Account setup section for more info on
+  how this can be reduced).
 * Recent version of [Python](https://www.python.org/)
 * [Chalice](https://github.com/aws/chalice)
 * [AWS CLI](https://pypi.org/project/awscli/)
