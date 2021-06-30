@@ -18,7 +18,7 @@ invoke/restart:
 invoke/on_stop:
 	cat events/instance-stopped.json | chalice invoke --name on_stop 
 
-deploy/infra:
+deploy/infra: deploy
 	aws s3api head-bucket --bucket "${S3_BUCKET}" || aws s3 mb "s3://${S3_BUCKET}"
 	chalice package --merge-template ./cloudformation.json --pkg-format cloudformation --template-format json ./.chalice/packaged 
 	aws cloudformation package --template-file ./.chalice/packaged/sam.json --s3-bucket "${S3_BUCKET}" --output-template-file .chalice/packaged/packaged.json
