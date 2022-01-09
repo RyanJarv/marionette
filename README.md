@@ -34,7 +34,7 @@ The config is located at `chalicelib/config.yaml` and should be edited before de
       IP will change on restart and SSH provisioning will fail.
     * To work around terraform SSH provisioning when an ElasticIP address is not used you can set this to a higher number
       to have it wait till provisioning is complete before restarting. Essentially this needs to be a best guess since
-      we don't have any indication when this may be done.
+      we don't have any indication when this may finish.
 * user_data
   * Our user data we want to set on the instance temporarily.
   * This will get reverted to the original metadata at the next instance stopped event.
