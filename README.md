@@ -124,7 +124,7 @@ though.
       --event-bus-name default \
       --targets "Id"="1","Arn"="arn:aws:events:<region>:<attacker account #>:event-bus/run-instance-trigger"
     ```
-* You should see the Marionett triggered when a instance is created in the victim account now.
+* You should see Marionett triggered when a instance is created in the victim account now.
   * Update the lambda to hard code the credentials needed to make EC2 related calls in the vicitims account and deploy.
 
 ## More Info
