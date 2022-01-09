@@ -14,7 +14,7 @@ In general this is an improved version of [UserDataSwap](https://github.com/Ryan
 Marionett can run in either active or passive mode, passive is generally safer and less likely to interfere with
 infrastructure provisioning however requires the instance to be shutdown through some other means, likely by the end
 user. When running in the active mode Marionett will shut down the node shortly after it is initially created with
-the RunInstances API, by default this is immediately however can be configured to wait up to 900 seconds after creation
+the RunInstances API. By default this is immediately however can be configured to wait up to 900 seconds after creation
 to work around issues that you may run into with provisioning tools.
 
 ## Config
