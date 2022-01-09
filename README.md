@@ -3,8 +3,9 @@
 Marionett is an example of an automated lambda function that runs and swaps out user data on EC2 event machine events. It is
 an example of how an attacker could semi-covertly backdoor EC2 instances passively on instance change events or actively on
 creation. The API calls will stand out, but from the user's perspective, when in passive mode, there will be no obvious changes
-to the instance. In active mode the instance is simply taking longer to start up (although may cause issues with certain
-provisioning tools). This is a well known attack, only change to what I've seen elsewhere is adding Event Bridge and Lambda.
+to the instance. In active mode the instance is simply taking longer to start up, active mode requires less actions on the behalf
+of the victim, but may cause issues with certain
+provisioning tools. This is a well known attack, only change to what I've seen elsewhere is adding Event Bridge and Lambda.
 
 In general this is an improved version of [UserDataSwap](https://github.com/RyanJarv/UserDataSwap).
 
