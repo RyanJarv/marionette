@@ -36,9 +36,9 @@ The config is located at `chalicelib/config.yaml` and should be edited before de
       to have it wait till provisioning is complete before restarting. Essentially this needs to be a best guess since
       we don't have any indication when this may finish.
 * user_data
-  * Our user data we want to set on the instance temporarily.
+  * The user data we want to set on the instance temporarily.
   * This will get reverted to the original metadata at the next instance stopped event.
-  * `bootcmd` will run at every startup regardless of if cloud-init has run previously.
+  * `bootcmd` will run at every startup as root, regardless of if cloud-init has run previously.
 
 ### Default Settings
 ```
